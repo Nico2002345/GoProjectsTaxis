@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -13,6 +14,9 @@ app = FastAPI(title="TaxisMitu")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
+# Cache-busts every static asset on each deploy/restart so browsers don't
+# keep serving stale JS/CSS after a redeploy.
+templates.env.globals["static_version"] = str(int(time.time()))
 
 app.include_router(auth.router)
 app.include_router(drivers.router)

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}TaxisMitu{% endblock %}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v={{ static_version }}">
 </head>
 <body>
   <main class="container">
@@ -15,7 +15,7 @@
     </hgroup>
     {% block content %}{% endblock %}
   </main>
-  <script src="/static/js/api.js"></script>
+  <script src="/static/js/api.js?v={{ static_version }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
