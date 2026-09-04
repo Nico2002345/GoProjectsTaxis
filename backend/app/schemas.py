@@ -18,7 +18,10 @@ class UserRegister(BaseModel):
     @field_validator("cedula")
     @classmethod
     def cedula_must_be_numeric(cls, value: str) -> str:
-        value = value.strip()
+        # Colombian cédulas are commonly typed with thousand-separator dots
+        # (e.g. "1.234.567") or stray spaces/dashes; strip those before
+        # validating instead of rejecting a normally-formatted ID.
+        value = value.strip().replace(".", "").replace(" ", "").replace("-", "")
         if not value.isdigit():
             raise ValueError("La cédula debe contener solo números")
         return value
