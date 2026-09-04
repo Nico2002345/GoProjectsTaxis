@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import Enum, ForeignKey, String
+from sqlalchemy import Enum, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -22,6 +22,20 @@ class TripStatus(str, enum.Enum):
     in_progress = "in_progress"
     completed = "completed"
     cancelled = "cancelled"
+
+
+class OfferStatus(str, enum.Enum):
+    pending = "pending"
+    accepted = "accepted"
+    rejected = "rejected"
+
+
+class PaymentStatus(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    declined = "declined"
+    voided = "voided"
+    error = "error"
 
 
 class User(Base):
@@ -68,6 +82,9 @@ class Trip(Base):
     dropoff_lat: Mapped[float | None] = mapped_column(nullable=True)
     dropoff_lng: Mapped[float | None] = mapped_column(nullable=True)
 
+    offered_fare_cents: Mapped[int] = mapped_column(default=0)
+    agreed_fare_cents: Mapped[int | None] = mapped_column(nullable=True)
+
     requested_at: Mapped[datetime] = mapped_column(default=utcnow)
     accepted_at: Mapped[datetime | None] = mapped_column(nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(nullable=True)
@@ -80,3 +97,42 @@ class Trip(Base):
     driver: Mapped["User | None"] = relationship(
         back_populates="trips_as_driver", foreign_keys=[driver_id]
     )
+    offers: Mapped[list["TripOffer"]] = relationship(back_populates="trip")
+
+
+class TripOffer(Base):
+    __tablename__ = "trip_offers"
+    __table_args__ = (UniqueConstraint("trip_id", "driver_id", name="uq_trip_offer_driver"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), index=True)
+    driver_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    fare_cents: Mapped[int]
+    status: Mapped[OfferStatus] = mapped_column(
+        Enum(OfferStatus, name="trip_offer_status"), default=OfferStatus.pending
+    )
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    responded_at: Mapped[datetime | None] = mapped_column(nullable=True)
+
+    trip: Mapped["Trip"] = relationship(back_populates="offers")
+    driver: Mapped["User"] = relationship()
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), index=True)
+    reference: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    wompi_transaction_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    amount_in_cents: Mapped[int]
+    currency: Mapped[str] = mapped_column(String(3), default="COP")
+    status: Mapped[PaymentStatus] = mapped_column(
+        Enum(PaymentStatus, name="payment_status"), default=PaymentStatus.pending
+    )
+    checkout_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
+    paid_at: Mapped[datetime | None] = mapped_column(nullable=True)
+
+    trip: Mapped["Trip"] = relationship()

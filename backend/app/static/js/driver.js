@@ -17,8 +17,13 @@ const noRequests = document.getElementById("no-requests");
 
 let activeTrip = null;
 let availableTrips = [];
+const offeredTripIds = new Set();
 
 availabilityToggle.checked = !!user.is_available;
+
+function formatCop(cents) {
+  return `$${Math.round(cents / 100).toLocaleString("es-CO")}`;
+}
 
 function renderRequests() {
   requestsList.innerHTML = "";
@@ -29,11 +34,30 @@ function renderRequests() {
   noRequests.style.display = "none";
   for (const trip of availableTrips) {
     const li = document.createElement("li");
-    li.textContent = `${trip.passenger_name || "Pasajero"} — recogida: ${trip.pickup_address} `;
-    const btn = document.createElement("button");
-    btn.textContent = "Aceptar";
-    btn.addEventListener("click", () => acceptTrip(trip.id));
-    li.appendChild(btn);
+    const alreadyOffered = offeredTripIds.has(trip.id);
+    li.textContent = `${trip.passenger_name || "Pasajero"} — recogida: ${trip.pickup_address} — ofrece ${formatCop(trip.offered_fare_cents)} `;
+
+    if (alreadyOffered) {
+      const span = document.createElement("span");
+      span.textContent = "Ya enviaste una oferta — esperando al pasajero";
+      li.appendChild(span);
+    } else {
+      const acceptBtn = document.createElement("button");
+      acceptBtn.textContent = "Aceptar tarifa";
+      acceptBtn.addEventListener("click", () => makeOffer(trip.id, null));
+      li.appendChild(acceptBtn);
+
+      const counterBtn = document.createElement("button");
+      counterBtn.textContent = "Contraofertar";
+      counterBtn.addEventListener("click", () => {
+        const value = prompt("¿Cuánto quieres cobrar por este viaje? (COP)");
+        if (!value) return;
+        const cents = Math.round(parseFloat(value) * 100);
+        if (!cents || cents <= 0) return;
+        makeOffer(trip.id, cents);
+      });
+      li.appendChild(counterBtn);
+    }
     requestsList.appendChild(li);
   }
 }
@@ -50,6 +74,8 @@ function renderActiveTrip() {
   document.getElementById("active-pickup").textContent = activeTrip.pickup_address;
   document.getElementById("active-status").textContent =
     STATUS_LABELS[activeTrip.status] || activeTrip.status;
+  document.getElementById("active-fare").textContent =
+    activeTrip.agreed_fare_cents != null ? formatCop(activeTrip.agreed_fare_cents) : "";
 
   const startBtn = document.getElementById("start-trip");
   const completeBtn = document.getElementById("complete-trip");
@@ -84,14 +110,16 @@ async function loadAvailableTrips() {
   renderRequests();
 }
 
-async function acceptTrip(tripId) {
+async function makeOffer(tripId, fareCents) {
   try {
-    activeTrip = await TaxisMituAPI.apiFetch(`/api/trips/${tripId}/accept`, { method: "POST" });
-    availableTrips = availableTrips.filter((t) => t.id !== tripId);
-    renderActiveTrip();
+    await TaxisMituAPI.apiFetch(`/api/trips/${tripId}/offers`, {
+      method: "POST",
+      body: JSON.stringify({ fare_cents: fareCents }),
+    });
+    offeredTripIds.add(tripId);
+    renderRequests();
   } catch (err) {
     alert(err.message);
-    await loadAvailableTrips();
   }
 }
 
@@ -135,8 +163,19 @@ connectTaxisMituWS((message) => {
     if (activeTrip && message.trip.id === activeTrip.id) {
       activeTrip = message.trip;
       renderActiveTrip();
+    } else if (!activeTrip && message.trip.driver_id === user.id) {
+      // A passenger picked our offer on this trip — adopt it as the active trip.
+      activeTrip = message.trip;
+      offeredTripIds.delete(message.trip.id);
+      availableTrips = availableTrips.filter((t) => t.id !== message.trip.id);
+      renderActiveTrip();
+    } else {
+      availableTrips = availableTrips.filter((t) => t.id !== message.trip.id);
+      renderRequests();
     }
-    availableTrips = availableTrips.filter((t) => t.id !== message.trip.id);
+  } else if (message.type === "trip_offer_rejected" || message.type === "trip_closed") {
+    offeredTripIds.delete(message.trip_id);
+    availableTrips = availableTrips.filter((t) => t.id !== message.trip_id);
     renderRequests();
   }
 });

@@ -14,6 +14,9 @@
     <label>Dirección de destino (opcional)
       <input type="text" id="dropoff_address">
     </label>
+    <label>¿Cuánto ofreces por el viaje? (COP)
+      <input type="number" id="offered_fare" min="1000" step="500" required>
+    </label>
     <button type="submit">Pedir taxi</button>
   </form>
   <p id="error" style="color: var(--pico-del-color); display:none;"></p>
@@ -22,9 +25,23 @@
 <article id="status-card" style="display:none;">
   <h3>Tu viaje</h3>
   <p>Estado: <mark id="trip-status"></mark></p>
-  <p id="trip-driver" style="display:none;">Conductor: <span id="driver-name"></span></p>
+  <p>Tu oferta: <span id="trip-offered-fare"></span></p>
+  <p id="trip-driver" style="display:none;">Conductor: <span id="driver-name"></span> — Tarifa acordada: <span id="trip-agreed-fare"></span></p>
+  <div id="offers-section" style="display:none;">
+    <h4>Ofertas de conductores</h4>
+    <ul id="offers-list"></ul>
+  </div>
   <button type="button" id="cancel-trip">Cancelar viaje</button>
 </article>
+
+{% if payments_enabled %}
+<article id="payment-card" style="display:none;">
+  <h3>Pago del viaje</h3>
+  <p>Tarifa acordada: <span id="payment-amount"></span></p>
+  <p id="payment-status-line" style="display:none;">Estado del pago: <mark id="payment-status"></mark></p>
+  <button type="button" id="pay-now">Pagar con Wompi</button>
+</article>
+{% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="/static/js/ws.js"></script>

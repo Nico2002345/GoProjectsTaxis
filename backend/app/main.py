@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.config import settings
 from app.routers import auth, drivers, trips, ws
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -17,6 +18,12 @@ app.include_router(auth.router)
 app.include_router(drivers.router)
 app.include_router(trips.router)
 app.include_router(ws.router)
+
+# Piloto: el módulo de pagos Wompi se mantiene fuera de la app hasta activar el flag.
+if settings.PAYMENTS_ENABLED:
+    from app.routers import payments
+
+    app.include_router(payments.router)
 
 
 @app.get("/")
@@ -46,12 +53,16 @@ def terms_page(request: Request):
 
 @app.get("/passenger")
 def passenger_page(request: Request):
-    return templates.TemplateResponse(request, "passenger.html")
+    return templates.TemplateResponse(
+        request, "passenger.html", {"payments_enabled": settings.PAYMENTS_ENABLED}
+    )
 
 
 @app.get("/driver")
 def driver_page(request: Request):
-    return templates.TemplateResponse(request, "driver.html")
+    return templates.TemplateResponse(
+        request, "driver.html", {"payments_enabled": settings.PAYMENTS_ENABLED}
+    )
 
 
 @app.get("/health")

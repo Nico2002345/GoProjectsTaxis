@@ -17,5 +17,14 @@ class Settings(BaseSettings):
     SMTP_FROM: str = "no-reply@taxismitu.com"
     SMTP_USE_TLS: bool = True
 
+    # Módulo de pagos Wompi: apagado por defecto durante el piloto. El router
+    # /api/payments ni se registra en la app mientras PAYMENTS_ENABLED sea False.
+    PAYMENTS_ENABLED: bool = False
+    WOMPI_PUBLIC_KEY: str | None = None
+    WOMPI_PRIVATE_KEY: str | None = None
+    WOMPI_EVENTS_SECRET: str | None = None
+    WOMPI_INTEGRITY_SECRET: str | None = None
+    WOMPI_BASE_URL: str = "https://sandbox.wompi.co/v1"
+
 
 settings = Settings()

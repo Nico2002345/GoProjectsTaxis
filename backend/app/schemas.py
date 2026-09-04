@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
-from app.models import TripStatus, UserRole
+from app.models import OfferStatus, PaymentStatus, TripStatus, UserRole
 
 
 class UserRegister(BaseModel):
@@ -82,10 +82,42 @@ class TripCreate(BaseModel):
     dropoff_address: str | None = None
     dropoff_lat: float | None = None
     dropoff_lng: float | None = None
+    offered_fare_cents: int
+
+    @field_validator("offered_fare_cents")
+    @classmethod
+    def offered_fare_must_be_positive(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("La tarifa ofrecida debe ser mayor a cero")
+        return value
 
 
 class TripStatusUpdate(BaseModel):
     status: TripStatus
+
+
+class TripOfferCreate(BaseModel):
+    fare_cents: int | None = None
+
+    @field_validator("fare_cents")
+    @classmethod
+    def fare_must_be_positive(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("La contraoferta debe ser mayor a cero")
+        return value
+
+
+class TripOfferOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    trip_id: int
+    driver_id: int
+    fare_cents: int
+    status: OfferStatus
+    created_at: datetime
+    responded_at: datetime | None
+    driver_name: str | None = None
 
 
 class TripOut(BaseModel):
@@ -101,6 +133,8 @@ class TripOut(BaseModel):
     dropoff_address: str | None
     dropoff_lat: float | None
     dropoff_lng: float | None
+    offered_fare_cents: int
+    agreed_fare_cents: int | None
     requested_at: datetime
     accepted_at: datetime | None
     started_at: datetime | None
@@ -108,3 +142,22 @@ class TripOut(BaseModel):
     cancelled_at: datetime | None
     passenger_name: str | None = None
     driver_name: str | None = None
+    offers: list[TripOfferOut] = []
+
+
+class PaymentCheckoutRequest(BaseModel):
+    trip_id: int
+
+
+class PaymentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    trip_id: int
+    reference: str
+    amount_in_cents: int
+    currency: str
+    status: PaymentStatus
+    checkout_url: str | None
+    created_at: datetime
+    paid_at: datetime | None
