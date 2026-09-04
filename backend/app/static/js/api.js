@@ -39,7 +39,13 @@ const TaxisMituAPI = (() => {
       let detail = res.statusText;
       try {
         const body = await res.json();
-        detail = body.detail || detail;
+        if (Array.isArray(body.detail)) {
+          // FastAPI's automatic 422 validation errors: a list of
+          // {loc, msg, ...} objects rather than a plain string.
+          detail = body.detail.map((e) => e.msg || JSON.stringify(e)).join(", ");
+        } else if (body.detail) {
+          detail = body.detail;
+        }
       } catch (_) {}
       throw new Error(detail);
     }
