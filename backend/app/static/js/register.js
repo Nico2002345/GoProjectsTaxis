@@ -1,5 +1,10 @@
 const roleSelect = document.getElementById("role");
 const plateField = document.getElementById("plate-field");
+const cedulaInput = document.getElementById("cedula");
+
+cedulaInput.addEventListener("input", () => {
+  cedulaInput.value = cedulaInput.value.replace(/\D/g, "");
+});
 
 function togglePlateField() {
   plateField.style.display = roleSelect.value === "driver" ? "block" : "none";
