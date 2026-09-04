@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Pasajero · TaxisMitu{% endblock %}
+{% block subtitle %}Pide tu taxi{% endblock %}
+{% block content %}
+<p><a href="#" id="logout-link">Cerrar sesión</a></p>
+
+<article id="request-card">
+  <h3>Solicitar viaje</h3>
+  <form id="request-form">
+    <label>Dirección de recogida
+      <input type="text" id="pickup_address" required>
+    </label>
+    <button type="button" id="use-location">Usar mi ubicación actual</button>
+    <label>Dirección de destino (opcional)
+      <input type="text" id="dropoff_address">
+    </label>
+    <button type="submit">Pedir taxi</button>
+  </form>
+  <p id="error" style="color: var(--pico-del-color); display:none;"></p>
+</article>
+
+<article id="status-card" style="display:none;">
+  <h3>Tu viaje</h3>
+  <p>Estado: <mark id="trip-status"></mark></p>
+  <p id="trip-driver" style="display:none;">Conductor: <span id="driver-name"></span></p>
+  <button type="button" id="cancel-trip">Cancelar viaje</button>
+</article>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/passenger.js"></script>
+{% endblock %}

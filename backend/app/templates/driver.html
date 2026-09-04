@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Conductor · TaxisMitu{% endblock %}
+{% block subtitle %}Panel de conductor{% endblock %}
+{% block content %}
+<p><a href="#" id="logout-link">Cerrar sesión</a></p>
+
+<label>
+  <input type="checkbox" id="availability-toggle" role="switch">
+  Disponible para viajes
+</label>
+
+<article id="active-trip-card" style="display:none;">
+  <h3>Viaje en curso</h3>
+  <p>Pasajero: <span id="active-passenger-name"></span></p>
+  <p>Recogida: <span id="active-pickup"></span></p>
+  <p>Estado: <mark id="active-status"></mark></p>
+  <button type="button" id="start-trip">Iniciar viaje</button>
+  <button type="button" id="complete-trip">Completar viaje</button>
+</article>
+
+<article id="requests-card">
+  <h3>Solicitudes disponibles</h3>
+  <ul id="requests-list"></ul>
+  <p id="no-requests">No hay solicitudes por ahora.</p>
+</article>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/driver.js"></script>
+{% endblock %}

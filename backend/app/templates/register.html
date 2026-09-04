@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Registro · TaxisMitu{% endblock %}
+{% block subtitle %}Crear cuenta{% endblock %}
+{% block content %}
+<form id="register-form">
+  <label>Nombre completo
+    <input type="text" id="full_name" required>
+  </label>
+  <label>Cédula
+    <input type="text" id="cedula" inputmode="numeric" pattern="[0-9]+" required>
+  </label>
+  <label>Correo electrónico
+    <input type="email" id="email" required autocomplete="email">
+  </label>
+  <label>Teléfono
+    <input type="tel" id="phone" required autocomplete="tel">
+  </label>
+  <label>Contraseña
+    <input type="password" id="password" required autocomplete="new-password">
+  </label>
+  <label>Soy
+    <select id="role">
+      <option value="passenger">Pasajero</option>
+      <option value="driver">Conductor</option>
+    </select>
+  </label>
+  <label id="plate-field" style="display:none;">Placa del vehículo
+    <input type="text" id="vehicle_plate">
+  </label>
+  <label>
+    <input type="checkbox" id="terms_accepted" required>
+    Acepto los <a href="/terms" target="_blank" rel="noopener">Términos y Condiciones</a>
+  </label>
+  <button type="submit">Registrarme</button>
+  <p id="error" style="color: var(--pico-del-color); display:none;"></p>
+</form>
+<p>¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/register.js"></script>
+{% endblock %}

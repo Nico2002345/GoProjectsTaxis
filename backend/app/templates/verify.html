@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Verificar correo · TaxisMitu{% endblock %}
+{% block subtitle %}Verifica tu correo{% endblock %}
+{% block content %}
+<p>Ingresa el código de 6 dígitos que enviamos a tu correo electrónico.</p>
+<form id="verify-form">
+  <label>Teléfono
+    <input type="tel" id="phone" required autocomplete="tel">
+  </label>
+  <label>Código de verificación
+    <input type="text" id="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+  </label>
+  <button type="submit">Verificar</button>
+  <button type="button" id="resend-btn" class="secondary">Reenviar código</button>
+  <p id="error" style="color: var(--pico-del-color); display:none;"></p>
+  <p id="info" style="display:none;"></p>
+</form>
+<p>¿Ya verificaste tu cuenta? <a href="/login">Inicia sesión</a></p>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/verify.js"></script>
+{% endblock %}

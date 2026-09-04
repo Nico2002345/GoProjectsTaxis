@@ -1,0 +1,92 @@
+/* Paleta TaxisMitu: ámbar de taxi + acento magenta sobre fondo oscuro contrastado */
+:root {
+  --taxi-amber: #ffb300;
+  --taxi-amber-dark: #e69500;
+  --taxi-magenta: #ff3d81;
+  --taxi-teal: #00c2a8;
+  --taxi-ink: #1a1523;
+
+  --pico-primary: var(--taxi-amber);
+  --pico-primary-background: var(--taxi-amber);
+  --pico-primary-hover: var(--taxi-amber-dark);
+  --pico-primary-focus: rgba(255, 179, 0, 0.5);
+  --pico-primary-inverse: var(--taxi-ink);
+
+  --pico-secondary: var(--taxi-magenta);
+  --pico-secondary-background: var(--taxi-magenta);
+  --pico-secondary-hover: #e02f6d;
+  --pico-secondary-focus: rgba(255, 61, 129, 0.4);
+  --pico-secondary-inverse: #ffffff;
+
+  --pico-del-color: var(--taxi-magenta);
+  --pico-ins-color: var(--taxi-teal);
+}
+
+[data-theme="light"],
+:root:not([data-theme="dark"]) {
+  --pico-background-color: #fff8ec;
+  --pico-color: var(--taxi-ink);
+  --pico-h1-color: var(--taxi-ink);
+}
+
+[data-theme="dark"] {
+  --pico-background-color: #16121f;
+  --pico-color: #f5eee0;
+  --pico-h1-color: var(--taxi-amber);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --pico-background-color: #16121f;
+    --pico-color: #f5eee0;
+    --pico-h1-color: var(--taxi-amber);
+  }
+}
+
+body {
+  min-height: 100vh;
+}
+
+main.container {
+  max-width: 620px;
+}
+
+hgroup h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, var(--taxi-amber), var(--taxi-magenta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+button[type="submit"],
+button:not(.secondary):not(.contrast) {
+  background: linear-gradient(90deg, var(--taxi-amber), var(--taxi-magenta));
+  border: none;
+  color: var(--taxi-ink);
+  font-weight: 700;
+}
+
+button[type="submit"]:hover,
+button:not(.secondary):not(.contrast):hover {
+  filter: brightness(1.08);
+}
+
+button.secondary {
+  background: transparent;
+  border: 2px solid var(--taxi-teal);
+  color: var(--taxi-teal);
+}
+
+a {
+  color: var(--taxi-magenta);
+}
+
+#requests-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}

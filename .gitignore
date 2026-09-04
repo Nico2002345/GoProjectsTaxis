@@ -1,0 +1,14 @@
+# Claude Code local settings (contains local secrets/permissions)
+.claude/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+.env.local
+
+# Alembic
+backend/alembic/versions/__pycache__/

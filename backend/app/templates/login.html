@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión · TaxisMitu{% endblock %}
+{% block subtitle %}Iniciar sesión{% endblock %}
+{% block content %}
+<form id="login-form">
+  <label>Teléfono
+    <input type="tel" id="phone" required autocomplete="tel">
+  </label>
+  <label>Contraseña
+    <input type="password" id="password" required autocomplete="current-password">
+  </label>
+  <button type="submit">Entrar</button>
+  <p id="error" style="color: var(--pico-del-color); display:none;"></p>
+</form>
+<p>¿No tienes cuenta? <a href="/register">Regístrate</a></p>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/login.js"></script>
+{% endblock %}
