@@ -18,8 +18,18 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column('users', sa.Column('cedula', sa.String(length=20), nullable=False))
-    op.add_column('users', sa.Column('email', sa.String(length=255), nullable=False))
+    # Nullable first so existing rows survive the ALTER, then backfill any
+    # pre-existing users (created before this migration existed) with a
+    # placeholder before enforcing NOT NULL — otherwise this migration fails
+    # on any environment that already has user rows.
+    op.add_column('users', sa.Column('cedula', sa.String(length=20), nullable=True))
+    op.add_column('users', sa.Column('email', sa.String(length=255), nullable=True))
+    op.execute(
+        "UPDATE users SET cedula = 'PENDING' || id, "
+        "email = 'pending+' || id || '@taxismitu.invalid' WHERE cedula IS NULL"
+    )
+    op.alter_column('users', 'cedula', nullable=False)
+    op.alter_column('users', 'email', nullable=False)
     op.add_column(
         'users',
         sa.Column('email_verified', sa.Boolean(), nullable=False, server_default=sa.false()),
