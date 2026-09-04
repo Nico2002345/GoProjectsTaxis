@@ -28,6 +28,13 @@ from app.security import (
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
+def _utcnow_naive() -> datetime:
+    # trips/users datetime columns are stored without a timezone, so a
+    # tz-aware "now" would round-trip as naive on read and blow up when
+    # compared later (e.g. in verify_email). Keep everything naive UTC.
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 @router.post("/register", response_model=RegisterOut)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
     if db.scalar(select(User).where(User.phone == payload.phone)) is not None:
@@ -38,9 +45,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
         raise HTTPException(status.HTTP_409_CONFLICT, "La cédula ya está registrada")
 
     pin = generate_pin()
-    expires_at = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.EMAIL_PIN_EXPIRE_MINUTES
-    )
+    expires_at = _utcnow_naive() + timedelta(minutes=settings.EMAIL_PIN_EXPIRE_MINUTES)
 
     user = User(
         phone=payload.phone,
@@ -53,7 +58,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
         email_verified=False,
         email_verification_pin=pin,
         email_verification_expires_at=expires_at,
-        terms_accepted_at=datetime.now(timezone.utc),
+        terms_accepted_at=_utcnow_naive(),
     )
     db.add(user)
     db.commit()
@@ -80,7 +85,7 @@ def verify_email(payload: EmailVerifyRequest, db: Session = Depends(get_db)):
     if (
         user.email_verification_pin != payload.pin
         or user.email_verification_expires_at is None
-        or user.email_verification_expires_at < datetime.now(timezone.utc)
+        or user.email_verification_expires_at < _utcnow_naive()
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Código inválido o expirado")
 
@@ -104,7 +109,7 @@ def resend_pin(payload: ResendPinRequest, db: Session = Depends(get_db)):
 
     pin = generate_pin()
     user.email_verification_pin = pin
-    user.email_verification_expires_at = datetime.now(timezone.utc) + timedelta(
+    user.email_verification_expires_at = _utcnow_naive() + timedelta(
         minutes=settings.EMAIL_PIN_EXPIRE_MINUTES
     )
     db.commit()
